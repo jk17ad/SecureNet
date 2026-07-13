@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="admin-wrapper">
+    <div class="admin-header">
+        <div class="admin-title">
+            <h2><i class="bi bi-shield-shaded text-red"></i> Admin Command Center</h2>
+            <p>Review system audits, full scan logs, network events, and generated reports.</p>
+        </div>
+        <div class="admin-quick-stats">
+            <span class="badge badge-admin"><i class="bi bi-person-check-fill"></i> Admin Session</span>
+            <span class="badge badge-date"><i class="bi bi-calendar3"></i> Live Monitoring</span>
+        </div>
+    </div>
+    
+    <!-- Admin Tabs -->
+    <div class="admin-tabs-nav">
+        <button class="admin-tab-btn active" onclick="switchAdminTab('url-logs')">
+            <i class="bi bi-link-45deg"></i> URL Scan History
+        </button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('threat-logs')">
+            <i class="bi bi-hdd-network"></i> Network Intrusion Logs
+        </button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('reports-logs')">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Generated Reports
+        </button>
+    </div>
+    
+    <!-- Admin Content Blocks -->
+    <div class="admin-tabs-container">
+        
+        <!-- Tab 1: URL Logs -->
+        <div id="admin-tab-url-logs" class="admin-tab-content active">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>URL Scan History (Audit Log)</h3>
+                    <span class="table-subtitle">Recent URL evaluation records</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>URL Target</th>
+                                <th>Verdict</th>
+                                <th>Confidence</th>
+                                <th>Scanned By</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if url_logs %}
+                                {% for log in url_logs %}
+                                <tr>
+                                    <td class="code-font text-truncate" title="{{ log.url }}">{{ log.url }}</td>
+                                    <td>
+                                        <span class="badge {% if log.prediction == 'Malicious' %}bg-red-dim text-red{% else %}bg-green-dim text-green{% endif %}">
+                                            {{ log.prediction }}
+                                        </span>
+                                    </td>
+                                    <td class="highlight font-medium">{{ (log.confidence * 100) | round(1) }}%</td>
+                                    <td class="user-cell"><i class="bi bi-person-circle"></i> {{ log.username or 'System' }}</td>
+                                    <td class="time-cell">{{ log.scan_time }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="empty-table-cell">
+                                        <i class="bi bi-inbox"></i>
+                                        <p>No URL scans have been logged yet.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 2: Network Threat Logs -->
+        <div id="admin-tab-threat-logs" class="admin-tab-content">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Network Intrusion Detection Log</h3>
+                    <span class="table-subtitle">Monitored package headers and threat classifications</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Threat Verdict</th>
+                                <th>Severity</th>
+                                <th>Confidence</th>
+                                <th>Source IP</th>
+                                <th>Destination IP</th>
+                                <th>Logged By</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if threat_logs %}
+                                {% for log in threat_logs %}
+                                <tr>
+                                    <td>
+                                        <span class="badge {% if log.threat_type != 'Normal' %}bg-red-dim text-red{% else %}bg-green-dim text-green{% endif %} font-bold">
+                                            {{ log.threat_type }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if log.severity == 'High' %}bg-red-dim text-red{% elif log.severity == 'Medium' %}bg-amber-dim text-amber{% else %}bg-blue-dim text-blue{% endif %}">
+                                            {{ log.severity }}
+                                        </span>
+                                    </td>
+                                    <td class="highlight font-medium">{{ (log.confidence * 100) | round(1) }}%</td>
+                                    <td class="code-font">{{ log.source_ip }}</td>
+                                    <td class="code-font">{{ log.destination_ip }}</td>
+                                    <td class="user-cell"><i class="bi bi-person-circle"></i> {{ log.username or 'System' }}</td>
+                                    <td class="time-cell">{{ log.scan_time }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="empty-table-cell">
+                                        <i class="bi bi-inbox"></i>
+                                        <p>No network threats have been logged yet.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 3: Generated Reports -->
+        <div id="admin-tab-reports-logs" class="admin-tab-content">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Generated Reports Registry</h3>
+                    <span class="table-subtitle">History of downloaded CSV and PDF reports</span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Report Name</th>
+                                <th>Format</th>
+                                <th>Creation Date</th>
+                                <th>Saved Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if reports_logs %}
+                                {% for report in reports_logs %}
+                                <tr>
+                                    <td class="font-medium"><i class="bi {% if report.report_type == 'PDF' %}bi-file-pdf-fill text-red{% else %}bi-file-earmark-spreadsheet-fill text-green{% endif %}"></i> {{ report.report_name }}</td>
+                                    <td>
+                                        <span class="badge {% if report.report_type == 'PDF' %}bg-red-dim text-red{% else %}bg-green-dim text-green{% endif %}">
+                                            {{ report.report_type }}
+                                        </span>
+                                    </td>
+                                    <td class="time-cell">{{ report.generated_at }}</td>
+                                    <td class="code-font text-truncate" title="{{ report.file_path }}">{{ report.file_path }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="empty-table-cell">
+                                        <i class="bi bi-folder-symlink"></i>
+                                        <p>No reports generated yet. Use the sidebar on the dashboard to export statistics.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

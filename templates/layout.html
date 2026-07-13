@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureNet - AI Cyber Threat Intelligence</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Three.js CDN for 3D Background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="three-bg" class="three-bg"></canvas>
+
+    <!-- Top Progress Bar -->
+    <div id="top-bar-progress" class="top-bar-progress"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('dashboard') }}" class="logo-area">
+                <div class="logo-icon">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span class="logo-text">Secure<span class="highlight">Net</span></span>
+            </a>
+            
+            <div class="nav-right">
+                <!-- Live Clock -->
+                <div class="live-clock" id="live-clock" title="System Local Time">
+                    <i class="bi bi-clock-history"></i>
+                    <span id="clock-time">00:00:00</span>
+                </div>
+                
+                <!-- Status Badge -->
+                <div class="status-badge" id="system-status">
+                    <span class="status-dot online"></span>
+                    <span class="status-text">AI Engine Active</span>
+                </div>
+                
+                {% if session.get('logged_in') %}
+                <nav class="nav-links">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    
+                    {% if session.get('role') == 'admin' %}
+                    <a href="{{ url_for('admin') }}" class="nav-link {% if request.endpoint == 'admin' %}active{% endif %}">
+                        <i class="bi bi-shield-shaded"></i> Admin Panel
+                    </a>
+                    {% endif %}
+                </nav>
+                
+                <!-- Dark Mode Toggle -->
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                    <i class="bi bi-sun-fill" id="sun-icon"></i>
+                    <i class="bi bi-moon-stars-fill" id="moon-icon"></i>
+                </button>
+                
+                <!-- User Profile & Logout -->
+                <div class="user-control">
+                    <div class="user-info">
+                        <span class="username">{{ session.get('username') }}</span>
+                        <span class="role-tag">{{ session.get('role') | upper }}</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+                </div>
+                {% else %}
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                    <i class="bi bi-sun-fill" id="sun-icon"></i>
+                    <i class="bi bi-moon-stars-fill" id="moon-icon"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Main Content Scaffolding -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 SecureNet Inc. All rights reserved. | AI-Powered Cyber Threat Defense Suite.</p>
+            <div class="footer-links">
+                <span class="version-tag">v2.1.0-Release</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Javascript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- 3D Interface Engine -->
+    <script src="{{ url_for('static', filename='js/three-scene.js') }}"></script>
+</body>
+</html>

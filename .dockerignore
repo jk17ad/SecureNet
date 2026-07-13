@@ -1,0 +1,13 @@
+.git
+.gitignore
+.pytest_cache
+__pycache__
+*.py[cod]
+*.db
+*.log
+reports_archive
+.env
+.venv
+venv
+test_app.py
+SecureNet_requirements.txt

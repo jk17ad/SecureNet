@@ -1,0 +1,364 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Top Stats Row -->
+    <section class="metrics-grid">
+        <div class="metric-card card-glow-red">
+            <div class="metric-icon bg-red">
+                <i class="bi bi-shield-slash-fill"></i>
+            </div>
+            <div class="metric-data">
+                <span class="metric-title">Total Threats Detected</span>
+                <span class="metric-value" id="stat-total-threats">{{ metrics.total_threats }}</span>
+            </div>
+            <div class="metric-trend text-red">
+                <i class="bi bi-arrow-up-right"></i> Active Security Alerts
+            </div>
+        </div>
+
+        <div class="metric-card card-glow-green">
+            <div class="metric-icon bg-green">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="metric-data">
+                <span class="metric-title">Safe URLs Scanned</span>
+                <span class="metric-value" id="stat-safe-urls">{{ metrics.safe_urls }}</span>
+            </div>
+            <div class="metric-trend text-green">
+                <i class="bi bi-check-circle-fill"></i> Verified Cleared
+            </div>
+        </div>
+
+        <div class="metric-card card-glow-amber">
+            <div class="metric-icon bg-amber">
+                <i class="bi bi-virus2"></i>
+            </div>
+            <div class="metric-data">
+                <span class="metric-title">Malicious URLs Blocked</span>
+                <span class="metric-value" id="stat-malicious-urls">{{ metrics.malicious_urls }}</span>
+            </div>
+            <div class="metric-trend text-amber">
+                <i class="bi bi-exclamation-octagon-fill"></i> Blocked Phishing
+            </div>
+        </div>
+
+        <div class="metric-card card-glow-blue">
+            <div class="metric-icon bg-blue">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <div class="metric-data">
+                <span class="metric-title">AI Detection Accuracy</span>
+                <span class="metric-value" id="stat-accuracy">{{ metrics.detection_accuracy }}</span>
+            </div>
+            <div class="metric-trend text-blue">
+                <i class="bi bi-stars"></i> ML Model Verified
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Workspace Split: Scanners and Logs -->
+    <div class="workspace-layout">
+        <div class="workspace-main">
+            <!-- Scan Tools Card -->
+            <div class="workspace-card">
+                <div class="card-header-tabs">
+                    <button class="tab-btn active" onclick="switchScanTab('url')">
+                        <i class="bi bi-link-45deg"></i> AI URL Scanner
+                    </button>
+                    <button class="tab-btn" onclick="switchScanTab('network')">
+                        <i class="bi bi-bar-chart-steps"></i> Network Dataset Scanner
+                    </button>
+                </div>
+                
+                <div class="card-body">
+                    <!-- URL Scanner Section -->
+                    <div id="scan-tab-url" class="scan-tab-content active">
+                        <div class="scan-instruction">
+                            <h3>Analyze Web Address</h3>
+                            <p>Our machine learning classifier evaluates domain lexical structure, protocol status, and high-risk keywords to evaluate security rating.</p>
+                        </div>
+                        <form id="url-scan-form" class="scan-input-group">
+                            <input type="text" id="url-input" placeholder="Paste URL here to auto-scan (e.g. http://login-secure-update-free.net/verify)" required>
+                            <button type="submit" class="scan-action-btn" id="url-scan-btn">
+                                <span class="btn-text">Scan URL</span>
+                                <span class="spinner" id="url-spinner"></span>
+                            </button>
+                        </form>
+                        
+                        <!-- URL Scan Result Panel -->
+                        <div id="url-result-panel" class="scan-result-panel hidden">
+                            <div class="result-badge-container">
+                                <div id="url-result-badge" class="result-badge bg-green">
+                                    <i id="url-result-icon" class="bi bi-shield-check"></i>
+                                    <span id="url-result-text">SAFE</span>
+                                </div>
+                            </div>
+                            <div class="result-details">
+                                <div class="result-row">
+                                    <span class="result-label">Target URL:</span>
+                                    <span class="result-val code-font" id="url-result-target"></span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Model Confidence:</span>
+                                    <span class="result-val highlight" id="url-result-confidence"></span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Evaluation Timestamp:</span>
+                                    <span class="result-val" id="url-result-time"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Network Intrusion Dataset Scanner Section -->
+                    <div id="scan-tab-network" class="scan-tab-content">
+                        <div class="scan-instruction">
+                            <h3>Upload Network Traffic Log</h3>
+                            <p>Upload a CSV file containing connection metrics to inspect traffic using the Random Forest classifier.</p>
+                            <a href="{{ url_for('static', filename='sample_network_log.csv') }}" class="download-sample-link" download>
+                                <i class="bi bi-download"></i> Download Sample CSV Dataset
+                            </a>
+                        </div>
+                        
+                        <form id="network-scan-form" class="file-upload-area">
+                            <input type="file" id="network-file" name="file" accept=".csv" required class="hidden">
+                            <label for="network-file" class="upload-dropzone" id="upload-label">
+                                <i class="bi bi-file-earmark-spreadsheet-fill upload-icon"></i>
+                                <span class="upload-title">Choose CSV File or Drag & Drop</span>
+                                <span class="upload-subtitle">Format columns: duration, protocol_type, packet_size, error_rate, connection_count</span>
+                            </label>
+                            
+                            <div class="upload-actions">
+                                <button type="submit" class="scan-action-btn" id="network-scan-btn">
+                                    <span class="btn-text">Analyze Network Log</span>
+                                    <span class="spinner" id="network-spinner"></span>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Network Scan Result Panel -->
+                        <div id="network-result-panel" class="scan-result-panel hidden">
+                            <div class="network-summary-title">
+                                <h3>Network Threat Scan Summary</h3>
+                                <div class="threat-rate-badge" id="net-threat-rate">0% Threat Rate</div>
+                            </div>
+                            
+                            <div class="network-metrics-row">
+                                <div class="net-metric-box">
+                                    <span class="net-box-val" id="net-total-scanned">0</span>
+                                    <span class="net-box-lbl">Connections Scanned</span>
+                                </div>
+                                <div class="net-metric-box text-red">
+                                    <span class="net-box-val" id="net-threats-count">0</span>
+                                    <span class="net-box-lbl">Intrusions Logged</span>
+                                </div>
+                            </div>
+                            
+                            <div class="network-breakdown">
+                                <h4>Threat Breakdown</h4>
+                                <div class="breakdown-bars">
+                                    <div class="breakdown-bar-item">
+                                        <div class="breakdown-labels">
+                                            <span>Normal Traffic</span>
+                                            <span id="breakdown-val-normal">0 (0%)</span>
+                                        </div>
+                                        <div class="progress-track"><div class="progress-fill bg-green" id="breakdown-fill-normal" style="width: 0%"></div></div>
+                                    </div>
+                                    <div class="breakdown-bar-item">
+                                        <div class="breakdown-labels">
+                                            <span>DoS Attacks</span>
+                                            <span id="breakdown-val-dos">0 (0%)</span>
+                                        </div>
+                                        <div class="progress-track"><div class="progress-fill bg-red" id="breakdown-fill-dos" style="width: 0%"></div></div>
+                                    </div>
+                                    <div class="breakdown-bar-item">
+                                        <div class="breakdown-labels">
+                                            <span>Malware Uploads</span>
+                                            <span id="breakdown-val-malware">0 (0%)</span>
+                                        </div>
+                                        <div class="progress-track"><div class="progress-fill bg-red" id="breakdown-fill-malware" style="width: 0%"></div></div>
+                                    </div>
+                                    <div class="breakdown-bar-item">
+                                        <div class="breakdown-labels">
+                                            <span>Brute-Force Logins</span>
+                                            <span id="breakdown-val-bruteforce">0 (0%)</span>
+                                        </div>
+                                        <div class="progress-track"><div class="progress-fill bg-amber" id="breakdown-fill-bruteforce" style="width: 0%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <section class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Intrusion & URL Threats Types</h3>
+                        <span class="chart-subtitle">Distribution of detected attack patterns</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="threatTypesChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Safe vs Malicious Scans</h3>
+                        <span class="chart-subtitle">Aggregate ML classification ratio</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="ratioChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== 3D SECTION ===== -->
+            <section class="viz3d-section">
+                <!-- 3D Threat Globe -->
+                <div class="viz3d-card globe-card">
+                    <div class="viz3d-header">
+                        <div class="viz3d-title-group">
+                            <span class="viz3d-badge">LIVE</span>
+                            <h3>Global Threat Intelligence Map</h3>
+                        </div>
+                        <span class="viz3d-subtitle">Drag to rotate &bull; Real-time threat origins</span>
+                    </div>
+                    <div class="viz3d-legend">
+                        <span class="legend-dot danger"></span><span>Critical</span>
+                        <span class="legend-dot warn"></span><span>Warning</span>
+                        <span class="legend-dot safe"></span><span>Secure</span>
+                    </div>
+                    <div class="globe-canvas-wrap">
+                        <canvas id="threat-globe-canvas"></canvas>
+                        <div class="globe-stats-overlay">
+                            <div class="globe-stat">
+                                <span class="gstat-val text-red" id="gstat-critical">5</span>
+                                <span class="gstat-lbl">Critical</span>
+                            </div>
+                            <div class="globe-stat">
+                                <span class="gstat-val text-amber" id="gstat-warn">3</span>
+                                <span class="gstat-lbl">Warning</span>
+                            </div>
+                            <div class="globe-stat">
+                                <span class="gstat-val text-green" id="gstat-safe">7</span>
+                                <span class="gstat-lbl">Secured</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D Network Topology -->
+                <div class="viz3d-card topology-card">
+                    <div class="viz3d-header">
+                        <div class="viz3d-title-group">
+                            <span class="viz3d-badge blue">AI</span>
+                            <h3>Live Network Topology</h3>
+                        </div>
+                        <span class="viz3d-subtitle">Hover nodes for details &bull; AI-detected patterns</span>
+                    </div>
+                    <div class="topology-canvas-wrap">
+                        <canvas id="topology-canvas"></canvas>
+                        <div class="topology-hud">
+                            <div class="hud-item">
+                                <i class="bi bi-hdd-network-fill text-blue"></i>
+                                <span id="hud-nodes">20 Nodes</span>
+                            </div>
+                            <div class="hud-item">
+                                <i class="bi bi-shield-slash-fill text-red"></i>
+                                <span id="hud-threats">6 Compromised</span>
+                            </div>
+                            <div class="hud-item">
+                                <i class="bi bi-activity text-green"></i>
+                                <span>Scanning Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="topo-legend">
+                        <span class="legend-dot danger"></span><span>Compromised</span>
+                        <span class="legend-dot warn"></span><span>Suspicious</span>
+                        <span class="legend-dot safe"></span><span>Clean</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Alerts and Reports Sidebar -->
+        <aside class="workspace-sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <h3>Recent Security Alerts</h3>
+                    <i class="bi bi-bell-fill text-red animate-pulse"></i>
+                </div>
+                
+                <div class="alerts-list" id="latest-alerts-list">
+                    {% if metrics.latest_alerts %}
+                        {% for alert in metrics.latest_alerts %}
+                        <div class="alert-item">
+                            <div class="alert-icon bg-red-dim text-red">
+                                <i class="bi {% if alert.category == 'URL Scan' %}bi-link{% else %}bi-hdd-network{% endif %}"></i>
+                            </div>
+                            <div class="alert-content">
+                                <p class="alert-desc">{{ alert.detail }}</p>
+                                <div class="alert-meta">
+                                    <span class="alert-time">{{ alert.time }}</span>
+                                    <span class="alert-conf">Conf: {{ alert.confidence }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-alerts">
+                            <i class="bi bi-shield-check"></i>
+                            <p>No active threats detected in this cycle.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <h3>Threat Intelligence Reports</h3>
+                    <i class="bi bi-file-earmark-pdf-fill text-blue"></i>
+                </div>
+                
+                <div class="report-controls">
+                    <p class="section-desc">Generate PDF and CSV summaries for compliance and review.</p>
+                    
+                    <div class="form-group">
+                        <label for="report-range">Time Range</label>
+                        <select id="report-range" class="sidebar-select">
+                            <option value="daily">Daily Threats Summary</option>
+                            <option value="weekly">Weekly Analysis</option>
+                            <option value="monthly">Monthly Overview</option>
+                        </select>
+                    </div>
+                    
+                    <div class="report-buttons">
+                        <button onclick="downloadReport('pdf')" class="report-action-btn pdf-btn">
+                            <i class="bi bi-filetype-pdf"></i> Download PDF
+                        </button>
+                        <button onclick="downloadReport('csv')" class="report-action-btn csv-btn">
+                            <i class="bi bi-filetype-csv"></i> Download CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Render Initial Data for Chart.js in main.js -->
+<script>
+    window.INITIAL_THREATS_DATA = {
+        normal: {{ metrics.threat_counts.Normal }},
+        dos: {{ metrics.threat_counts.DoS }},
+        malware: {{ metrics.threat_counts.Malware }},
+        bruteforce: {{ metrics.threat_counts.get("Brute-Force", 0) }},
+        safe_urls: {{ metrics.safe_urls }},
+        malicious_urls: {{ metrics.malicious_urls }}
+    };
+</script>
+{% endblock %}

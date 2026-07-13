@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-decorations">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+    
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h2>Welcome to SecureNet</h2>
+            <p>Access the threat intelligence command center</p>
+        </div>
+        
+        {% if error %}
+        <div class="login-error-alert animate-shake">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <div class="form-group">
+                <label for="username">
+                    <i class="bi bi-person-fill"></i> Username
+                </label>
+                <div class="input-container">
+                    <input type="text" id="username" name="username" placeholder="Enter username (e.g. admin)" required autocomplete="off">
+                    <span class="input-focus-border"></span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">
+                    <i class="bi bi-key-fill"></i> Password
+                </label>
+                <div class="input-container">
+                    <input type="password" id="password" name="password" placeholder="Enter security credentials" required>
+                    <span class="input-focus-border"></span>
+                </div>
+            </div>
+            
+            <button type="submit" class="login-submit-btn">
+                <span>Sign In Securely</span>
+                <i class="bi bi-arrow-right-short"></i>
+            </button>
+        </form>
+        
+        <div class="login-footer-tips">
+            <p><i class="bi bi-info-circle"></i> Default Demo Credentials:</p>
+            <div class="demo-creds">
+                <code>admin / admin123</code> (Admin) or <code>user / user123</code> (Standard)
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

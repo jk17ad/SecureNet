@@ -1,0 +1,29 @@
+--- Page 1 ---
+SecureNet: An AI-Powered Cyber Threat Detection 
+System
+Abstract
+The increasing reliance on digital technologies and internet-based services has led to a significant rise 
+in cyber threats, making traditional security mechanisms insufficient against modern attacks. 
+SecureNet: An AI-Powered Cyber Threat Detection System is designed to provide intelligent, real-
+time protection against cyber threats by leveraging Artificial Intelligence (AI) and Machine Learning 
+(ML). The proposed system analyzes network traffic, user activities, and URL characteristics to detect 
+malicious behavior, including phishing websites, malware, denial-of-service (DoS) attacks, brute-force 
+attacks, and other suspicious activities.
+The system utilizes data preprocessing, feature engineering, and supervised machine learning 
+algorithms such as Random Forest and XGBoost to accurately classify network traffic and identify 
+potential threats. It also incorporates a malicious URL detection module that evaluates various URL 
+features, including domain structure, URL length, HTTPS usage, suspicious keywords, and lexical 
+patterns, to determine whether a website is safe or malicious. By continuously learning from data, the 
+system can adapt to emerging cyber threats and improve detection accuracy over time.
+SecureNet features a web-based dashboard that enables administrators to monitor threats in real time, 
+receive instant security alerts, view attack statistics, and maintain detailed logs of detected incidents. 
+This centralized interface supports faster decision-making and enhances the overall efficiency of 
+cybersecurity operations.
+The proposed system aims to reduce manual effort, improve threat detection accuracy, and strengthen 
+digital security through intelligent automation. It offers a scalable and cost-effective cybersecurity 
+solution suitable for educational institutions, small and medium-sized enterprises, and organizations 
+seeking proactive cyber defense. Future enhancements include deep learning-based threat detection, 
+Explainable AI (XAI), automated incident response, browser extension support for real-time URL 
+scanning, and integration with external threat intelligence platforms to provide a more robust and 
+adaptive cybersecurity framework.
+
