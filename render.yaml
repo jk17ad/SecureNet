@@ -9,3 +9,5 @@ services:
         generateValue: true
       - key: PORT
         value: 10000
+      - key: PYTHONUNBUFFERED
+        value: 1
