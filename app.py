@@ -4,7 +4,7 @@ import io
 import sqlite3
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, send_file
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from database import get_db_connection, init_db
 from models import predict_url, predict_network_threat
 
@@ -129,18 +129,67 @@ def get_dashboard_metrics():
 # --- MIDDLEWARE & SESSION HELPERS ---
 @app.before_request
 def check_login():
-    # Require login for dashboard and API endpoints, exclude static, login, and root redirect
-    allowed_routes = ['login', 'static']
+    # Require login for dashboard and API endpoints, exclude static, login, register, and root redirect
+    allowed_routes = ['login', 'register', 'static']
     if not session.get("logged_in") and request.endpoint not in allowed_routes and request.endpoint is not None:
         return redirect(url_for('login'))
 
 # --- AUTH ROUTES ---
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if session.get("logged_in"):
+        return redirect(url_for('dashboard'))
+        
+    error = None
+    success = None
+    
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+        
+        # Validation
+        if not username or not password or not confirm_password:
+            error = "Please fill in all fields."
+        elif len(username) < 3:
+            error = "Username must be at least 3 characters long."
+        elif len(password) < 6:
+            error = "Password must be at least 6 characters long."
+        elif password != confirm_password:
+            error = "Passwords do not match."
+        else:
+            # Check if username already exists
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+            existing_user = cursor.fetchone()
+            
+            if existing_user:
+                error = "Username already exists. Please choose another."
+            else:
+                # Create new user with 'user' role
+                password_hash = generate_password_hash(password, method="pbkdf2:sha256")
+                cursor.execute(
+                    "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+                    (username, password_hash, "user")
+                )
+                conn.commit()
+                conn.close()
+                success = "Registration successful! You can now login."
+                return redirect(url_for('login', success=success))
+            
+            conn.close()
+                
+    return render_template("register.html", error=error, success=success)
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get("logged_in"):
         return redirect(url_for('dashboard'))
         
     error = None
+    success = request.args.get('success')
+        
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
@@ -163,7 +212,7 @@ def login():
             else:
                 error = "Invalid username or password."
                 
-    return render_template("login.html", error=error)
+    return render_template("login.html", error=error, success=success)
 
 @app.route("/logout")
 def logout():

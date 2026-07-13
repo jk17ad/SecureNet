@@ -15,6 +15,13 @@
             <p>Access the threat intelligence command center</p>
         </div>
         
+        {% if success %}
+        <div class="login-success-alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>{{ success }}</span>
+        </div>
+        {% endif %}
+        
         {% if error %}
         <div class="login-error-alert animate-shake">
             <i class="bi bi-exclamation-triangle-fill"></i>
@@ -54,6 +61,10 @@
             <div class="demo-creds">
                 <code>admin / admin123</code> (Admin) or <code>user / user123</code> (Standard)
             </div>
+        </div>
+        
+        <div class="login-register-link">
+            <p>Don't have an account? <a href="{{ url_for('register') }}">Create one here</a></p>
         </div>
     </div>
 </div>
