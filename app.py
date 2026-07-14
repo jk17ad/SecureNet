@@ -274,11 +274,19 @@ def scan_url():
     url = request.form.get("url", "").strip()
     if not url:
         return jsonify({"success": False, "error": "URL input cannot be empty."}), 400
-        
-    # Check invalid URL format (basic check)
-    if not (url.startswith("http://") or url.startswith("https://") or "." in url):
-        return jsonify({"success": False, "error": "Invalid URL format. Please enter a valid URL."}), 400
-        
+
+    # Auto-add scheme if missing (e.g. user pastes "google.com" or "//google.com")
+    if url.startswith("//"):
+        url = "https:" + url
+    elif not url.startswith(("http://", "https://")):
+        url = "https://" + url
+
+    # Validate the URL has at least a dot in the host (basic sanity check)
+    from urllib.parse import urlparse as _urlparse
+    _parsed = _urlparse(url)
+    if not _parsed.netloc or "." not in _parsed.netloc:
+        return jsonify({"success": False, "error": "Invalid URL format. Please enter a valid URL (e.g. https://example.com)."}), 400
+
     try:
         prediction, confidence = predict_url(url)
         

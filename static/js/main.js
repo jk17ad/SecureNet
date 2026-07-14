@@ -301,12 +301,19 @@ function initForms() {
         
         // Auto-scan on paste
         urlInput.addEventListener("paste", (e) => {
-            // Wait for paste to complete, then auto-scan
+            // Wait for paste to fully complete, then normalize + auto-scan
             setTimeout(() => {
-                if (urlInput.value.trim()) {
-                    performUrlScan();
+                let val = urlInput.value.trim();
+                if (!val) return;
+                // Normalize: add https:// if no scheme
+                if (val.startsWith("//")) {
+                    val = "https:" + val;
+                } else if (!/^https?:\/\//i.test(val)) {
+                    val = "https://" + val;
                 }
-            }, 100);
+                urlInput.value = val;
+                performUrlScan();
+            }, 300);
         });
         
         // Form submit handler
